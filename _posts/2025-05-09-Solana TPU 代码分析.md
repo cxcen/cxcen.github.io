@@ -37,10 +37,6 @@ Tpu 代表的是一整套 **交易处理流水线**（类似 CPU 的流水线）
 7. 处理 Bundle 和 Block Engine（Jito 特有）；
 8. 处理 Relayer 与 Forward 流量。
 
-
-
-
-
 ##### 调度器类型
 
 | **模式**               | **冲突控制精度** | **吞吐性能** | **场景适用**               |
@@ -54,3 +50,6 @@ Tpu 代表的是一整套 **交易处理流水线**（类似 CPU 的流水线）
 - 尽可能快速地将高优交易调度出去；
 - 牺牲部分调度精度换取更高吞吐。
 
+#### TPU 脑图
+
+![solana-prio-scheduler](../assets/img/solana-prio-scheduler.jpg)
