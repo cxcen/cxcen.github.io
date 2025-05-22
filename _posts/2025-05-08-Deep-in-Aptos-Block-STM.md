@@ -2,8 +2,8 @@
 title: 深入分析Aptos block-STM
 type: post
 categories:
-  - aptos
   - web3
+  - aptos
 tags:
   - aptos
   - web3

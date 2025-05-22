@@ -2,12 +2,12 @@
 title: Solana中MEV监听交易的方法
 type: post
 categories:
-- solana
-- web3
+  - web3
+  - solana
 tags:
-- solana
-- web3
-- mve
+  - solana
+  - web3
+  - mve
 ---
 
 

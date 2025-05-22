@@ -2,8 +2,8 @@
 title: Sui链技术全景
 type: post
 categories:
-  - sui
   - web3
+  - sui
 tags:
   - sui
   - web3

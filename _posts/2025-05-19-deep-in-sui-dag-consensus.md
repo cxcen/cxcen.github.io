@@ -3,8 +3,8 @@ typora-copy-images-to: ../assets/img
 title: 深入理解Sui Mysticeti共识
 type: post
 categories:
-  - sui
   - web3
+  - sui
 tags:
   - sui
   - web3

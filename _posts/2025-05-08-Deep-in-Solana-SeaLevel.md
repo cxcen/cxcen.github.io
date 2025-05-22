@@ -2,8 +2,8 @@
 title: 深入分析 Solana SeaLevel
 type: post
 categories:
-  - solana
   - web3
+  - solana
 tags:
   - solana
   - web3

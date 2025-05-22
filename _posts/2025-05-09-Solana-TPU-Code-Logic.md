@@ -2,12 +2,12 @@
 title: 详解Solana交易并行调度
 type: post
 categories:
-- solana
-- web3
+  - web3
+  - solana
 tags:
-- solana
-- web3
-- sealevel
+  - solana
+  - web3
+  - sealevel
 ---
 
 #### TPU 核心数据结构
