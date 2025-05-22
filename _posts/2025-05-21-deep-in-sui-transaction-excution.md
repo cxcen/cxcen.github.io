@@ -11,6 +11,6 @@ tags:
 - executor
 ---
 
-<img src="../assets/img/Sui-Transaction-Manager.jpg">
 
 
+<img src="../assets/img/Sui-Transaction-Manager.jpg" alt="Sui-Transaction-Manager"/>
