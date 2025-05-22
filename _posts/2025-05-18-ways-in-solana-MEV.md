@@ -1,9 +1,6 @@
 ---
-title: solana中MEV监听交易的方法
-date: 2025-05-18T15:02:20+08:00
+title: Solana中MEV监听交易的方法
 type: post
-url: /posts/mev-in-solana
-toc: true
 categories:
 - solana
 - web3

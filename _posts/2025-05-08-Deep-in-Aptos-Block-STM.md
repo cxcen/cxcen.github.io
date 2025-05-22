@@ -1,6 +1,13 @@
 ---
 title: 深入分析Aptos block-STM
-categories: [dev]
+type: post
+categories:
+  - aptos
+  - web3
+tags:
+  - aptos
+  - web3
+  - mve
 ---
 # 深入分析Aptos block-STM
 ### 核心技术

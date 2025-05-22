@@ -1,5 +1,15 @@
+---
+title: 基于DAG的BFT共识
+type: post
+categories:
+- consensus
+- web3
+tags:
+- pbft
+- web3
+- consensus
+---
 
-# 基于DAG的BFT共识
 在区块链的语义里，[BFT 共识](https://zhida.zhihu.com/search?content_id=219680327&content_type=Article&match_order=1&q=BFT+共识&zhida_source=entity)是试图让 N 个验证节点（其中最多存在 f 个拜占庭节点）就一个无限增长的提案（区块或者交易集合）序列达成一致的机制。
 
 众所周知，经典的基于 BFT 的共识算法，无论是 PBFT 还是改进的 [HotStuff](https://zhida.zhihu.com/search?content_id=219680327&content_type=Article&match_order=1&q=HotStuff&zhida_source=entity) 通信复杂度都比较高，可扩展性差，且在网络不稳定的情况下延迟很高。

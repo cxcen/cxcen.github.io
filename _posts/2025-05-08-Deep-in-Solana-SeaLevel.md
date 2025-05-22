@@ -1,6 +1,13 @@
 ---
 title: 深入分析 Solana SeaLevel
-categories: [dev]
+type: post
+categories:
+  - solana
+  - web3
+tags:
+  - solana
+  - web3
+  - sealevel
 ---
 
 # 深入分析 Solana SeaLevel

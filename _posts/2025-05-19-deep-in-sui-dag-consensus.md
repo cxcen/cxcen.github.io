@@ -1,8 +1,15 @@
 ---
 typora-copy-images-to: ../assets/img
+title: 深入理解Sui Mysticeti共识
+type: post
+categories:
+  - sui
+  - web3
+tags:
+  - sui
+  - web3
+  - consensus
 ---
-
-## 深入理解Sui Mysticeti共识
 
 ### **Narwhal 和 Bullshark 回顾**
 
