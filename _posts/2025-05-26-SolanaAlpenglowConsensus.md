@@ -10,7 +10,7 @@ tags:
   - consensus
 ---
 
-# Alpenglow共识白皮书（译）
+# Alpenglow共识白皮书（翻译）
 
 
 
