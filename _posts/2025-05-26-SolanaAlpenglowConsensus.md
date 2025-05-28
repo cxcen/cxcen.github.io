@@ -365,8 +365,81 @@ $Timeout(i) = clock() + ∆timeout + (i − s + 1) · ∆block$
 - `ItsOver`：该节点在 slot s 上投出了最终确定票，不会再投任何票；
 - `BadWindow`：该节点在 slot $s$ 上投出了以下任意一种票：skip、skip-fallback 或 notar-fallback。
 
-​	此外，每个 slot 还可以关联一个待处理区块（pending block），用于后续重新尝试调用 `tryNotar()`，因为其满足条件可能会在稍后达成。该变量初始化为：$pendingBlocks ← [⊥, ⊥, …]$
+​	此外，每个 slot 与一个待处理区块（pending block）关联，该变量初始化为：$pendingBlocks ← [⊥, ⊥, …]$。`pendingBlocks`用于后续重新调用 `tryNotar()`，因为其条件可能会在稍后满足。
 
 ![image-20250528113428854](../assets/img/image-20250528113428854.png)
 
 ![image-20250528113359474](../assets/img/image-20250528113359474.png)
+
+### 2.7 创建区块
+
+​	window从 slot $s$ 开始， 该window 的 leader $v$ 负责生成 window 中的所有的 slot $windowSlots(s)$ 区块。当事件 $ParentReady(s, hash(b_p))$ 被触发，$v$ 可以确定：slot $s$ 上以区块 $b_p$ 为父区块的区块 $b$ 是有效的。换句话说，其他节点也会收收到同样的证书，这些证书使 $v$ 触发 `ParentReady(hash(bp))` 事件，同样也会使自己触发该事件。因此，所有正确节点都会对 $b$ 进行投票。
+
+​	在常规情况下， slot $s$ 只会触发一次 $ParentReady(s, hash(b_p))$ 事件。这种情况下，leader $v$ 的区块必须构建在 $b_p$ 之上，而不能以任何方式“分叉出去”。但如果前任 leader 异常或网络延迟，$v$ 对多个不同的父区块 $b_p$ 触发了 $ParentReady(s, hash(b_p))$，则 $v$ 可以选择任意的 $b_p$ 作为其父区块。
+
+​	算法 3 引入了优化：leader $v$ 会在任何 $ParentReady(s, hash(b_p))$ 被触发前，“乐观地”构建区块。通常，$v$ 会先在 slot $s−1$ 接收到区块 $b_p$，经过一段延迟后观察到 $b_p$ 的证书，最终触发 $ParentReady(s, hash(b_p))$。算法 3 能够避免这种常见的延迟。如果 $v$ 以 $b_p$ 为父构建的区块，最终触发了 $ParentReady(s, hash(b′_p))$ 且 $b′_p ≠ b_p$，那么 $v$ 在构建切片（slice）$t$ 时将 $b′_p$ 标记为该区块的父区块。在这种情况下，切片 $1,...,t−1$ 将在执行过程中被忽略。
+
+​	我们只允许区块更换一次父区块，且仅限在window 的第一个 slot 上的区块才可以更换。
+
+​	当 leader 观察到某个 $ParentReady(s, ...)$ 事件时，它会立即生成其整个 leader window 中的所有区块。因此，第一个区块 $b₀$ 必定构建在 $b_p$ 上，并使$v$ 触发 $ParentReady(s, hash(b_p))$事件，然后 $b₀$ 成为 slot $s+1$ 上区块 $b₁$ 的父区块，$b₁$ 又是 slot $s+2$ 上区块 $b₂$ 的父区块，以此类推。
+
+![image-20250528154927234](../assets/img/image-20250528154927234.png)
+
+
+
+![image-20250528154946227](../assets/img/image-20250528154946227.png)
+
+### 2.8 Repair
+
+
+
+### 2.9 Safety
+
+
+
+### 2.10 Liveness
+
+
+
+ ### 2.11 更高的抗崩溃性
+
+
+
+## 3 补充
+
+### 3.1 智能采样
+
+
+
+### 3.2 奖励
+
+
+
+### 3.3 投票和执行
+
+
+
+### 3.4 异步实现
+
+
+
+### 3.5 动态超时
+
+
+
+### 3.6 质押 = 带宽
+
+
+
+### 3.7 协议参数
+
+
+
+### 3.8 带宽
+
+
+
+### 3.9 延迟
+
+ 
+
