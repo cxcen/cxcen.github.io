@@ -13,11 +13,42 @@ tags:
     <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
     <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-            tex2jax: {
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-            inlineMath: [['$','$']]
-            }
-        });
+        'HTML-CSS': {
+            matchFontHeight: true,
+            showMathMenu: true
+        },
+        SVG: {
+            matchFontHeight: true
+        },
+        CommonHTML: {
+            matchFontHeight: true
+        },
+        preRemoveClass: "MathJax_Preview",
+        tex2jax: {
+            inlineMath: [
+                ['$','$']
+            ],
+            displayMath: [ 
+                ['$$','$$'],
+                ['\\[','\\]'] 
+            ],
+            processEscapes: true,
+            processRefs: true,
+            processEnvironments: true,
+            preview: "TeX",
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code']
+        },
+        TeX: { 
+            extensions: ["AMSmath.js", "AMSsymbols.js"],
+            equationNumbers: { 
+                autoNumber: "AMS",
+                useLabelIds: true
+            },
+            Macros: {},
+            MAXMACROS: 10000,
+            MAXBUFFER: 5*1024
+        },
+    });
     </script>
 </head>
 
@@ -175,7 +206,10 @@ decode 函数：输入Merkle 根 $r$和大小为 $γ$ 的数据子集 $\{(d_i, �
 
 **定义 1（Shred）：** Shred（片段）可以被完整装入一个 UDP 数据报中。它的格式如下：
 
-$(s, t, i, z_t, r_t, (d_i, \pi_i), \sigma_t)$
+$$
+(s, t, i, z_t, r_t, (d_i, \pi_i), \sigma_t
+$$
+)
 其中
 
 - $s, t, i \in \mathbb{N}$：分别表示 slot 编号、slice 索引、shred 索引；
@@ -187,8 +221,9 @@ $(s, t, i, z_t, r_t, (d_i, \pi_i), \sigma_t)$
 
 Slice 的结构如下：
 
-$(s, t, z_t, r_t, M_t, \sigma_t)$
-
+$$
+(s, t, z_t, r_t, M_t, \sigma_t)
+$$
 其中：
 
 - $s, t \in \mathbb{N}$：分别表示 slot 编号和 slice 索引；
@@ -197,9 +232,9 @@ $(s, t, z_t, r_t, M_t, \sigma_t)$
 - $\sigma_t$：由 slot 的领导者节点对对象 $Slice(s, t, z_t, r_t)$ 签名所得的签名。
 
 **定义 3（Block）：**区块 b 是某一 slot 中所有 slice 的集合，用于投票和达成共识。其结构为：
-
-$b = \{(s, t, z_t, r_t, M_t, \sigma_t)\}_{t \in \{1,\dots,k\}}$
-
+$$
+b = \{(s, t, z_t, r_t, M_t, \sigma_t)\}_{t \in \{1,\dots,k\}}
+$$
 其中：对于 $t < k$，均有$z_k = 1，z_t = 0$。区块的数据 $M$ 是所有 slice 数据的拼接结果，即$M = (M_1, M_2, \dots, M_k)$定义 $\text{slot}(b) = s$，即该区块所属的 slot 编号为 $s$。区块数据 $M$ 包含其父区块的 slot 编号 $\text{slot}(\text{parent}(b))$ 和哈希值 $\text{hash}(\text{parent}(b))$。一个区块的数据量和执行时间都会被限定在某个上限范围内。
 
 **定义 4（Block Hash）：**区块 $b = \{(s, t, z_t, r_t, M_t, \sigma_t)\}_{t \in \{1,\dots,k\}}$ 的哈希值 $\text{hash}(b)$ 定义为一棵 Merkle 树 T 的根节点值，其中：
@@ -313,12 +348,16 @@ Rotor 是 Alpenglow 协议中的区块传播协议。领导者节点（发送者
 
 - $SafeToNotar(s, hash(b))$：仅节点已经在 slot $s$ 投过票，但 $b$ 还没有被公证。满足：
 
-  $notar(b) ≥ 40%$ or $skip(s) + notar(b) ≥ 60%$ and $notar(b) ≥ 20%$
+  $$
+  notar(b) ≥ 40\% 	\quad or \quad  skip(s) + notar(b) ≥ 60\% \quad and \quad notar(b) ≥ 20\%
+  $$
 
 ​	如果 $s$ 是 leader window 中的第一个 slot，则直接触发事件。否则，节点需先通过修复流程（第 2.8 节）获取区块 $b$，以便识别其父区块。随后，当 Pool 中包含其父区块的公证回退证书后，再触发此事件。
 
 - $SafeToSkip(s)$：仅当以下条件成立时才触发，节点已经在 slot $s$ 投过票，但不是投的跳过票，且满足：
 
-​	$skip(s) + ∑ notar(b) - max(notar(b)) ≥ 40%$
+$$
+skip(s) + ∑ notar(b) - max(notar(b)) ≥ 40\%
+$$
 
 ​	$SafeToNotar(s, b)$ 事件表明：不可能存在另一个区块 $b' ≠ b$ 能够在 slot $s$ 上被快速最终确定，因此现在投 $b$ 的公证回退票是安全的。同样地，$SafeToSkip(s)$ 表明：不可能存在任何区块能在 slot $s$ 上被快速最终确定，因此现在投 slot $s$ 的跳过回退票是安全的。
