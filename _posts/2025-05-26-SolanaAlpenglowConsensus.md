@@ -13,6 +13,14 @@ tags:
    <script type="text/javascript" async
       src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
    </script>
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['$`', '`$'], ['\\(', '\\)']],
+          displayMath: [['```math', '```'], ['$$', '$$'], ['\\[', '\\]']]
+        }
+      };
+    </script>
 </head>
 
 
@@ -329,54 +337,36 @@ $$
 
 ![image-20250528112706751](../assets/img/image-20250528112706752.png)
 
-**投票的目的** 是为了对区块进行公证（notarize）和最终确定（finalize）。最终确定的区块构成了一条唯一的父引用链（parent references chain），代表协议的输出结果。
+​	投票的目的是为了对区块进行公证（notarize）和最终化（finalize）。最终化的区块构成的父引用链（parent references chain），代表协议的输出结果。
 
-该协议确保对于每一个 slot，要么产生一个跳过证书（skip certificate），要么某个区块 b 被公证（或被公证回退 notarized-fallback），并且 b 的所有祖先也都已被公证。投票门槛的设置确保了即使存在恶意的 leader，也无法阻止生成对活性（liveness）至关重要的证书。
+​	该协议确保对于每一个 slot，要么产生跳过证书（skip certificate），要么区块 $b$ 被公证（或被公证回退 ），并且 $b$ 的所有祖先也都已被公证。投票门槛确保即使存在恶意 leader，也无法阻止生成对活性（liveness）证书。如果有多数正确节点对同区块 $b$ 投下了公证票，那么其他正确节点也会对 $b$ 投下公证回退票；否则，所有正确节点将广播跳过回退票（skip-fallback votes）。
 
-- 如果有很多正确节点对同一个区块 b 投下了公证票，那么其他所有正确节点也会对该区块投下公证回退票；
-- 如果不是这种情况，则所有正确节点将广播跳过回退票（skip-fallback votes）。
+​	根据定义 14，当节点收到区块后并观察到足够多节点的公证票时，可立刻对该区块进行最终化。构造证书门槛较低，当节点构造出该证书后，就会发送最终确定票（finalization vote）。因此，区块最终确定的过程分为，80% 权益节点投票可快速最终确定的一轮投票和 60% 权益节点投票后也可以最终确定的两轮投票（较慢）。
 
-根据**定义 14**，当节点在接收到区块后观察到足够多其他节点的公证票时，即可立刻对该区块进行最终确定。然而，构造公证证书所需的参与门槛较低；当节点构造出该证书后，就会发送最终确定票（finalization vote）。因此，区块最终确定的过程分为：
+​	节点拥有本地时钟，并会触发超时事件（timeout events）。当节点 $v$ 的 Pool 触发 `ParentReady(s, ...)` 事件后，它会对以 slot $s$ 开始的 leader window 中的所有区块设置定时器。超时由两个参数控制（相关于网络同步性）：
 
-- **一个投票轮次**：当有 **80%** 权益节点投票，即可快速最终确定；
-- **两个投票轮次**：当有 **60%** 权益节点投票时，也可以最终确定（较慢）。
+- $∆block$：协议规定的出块时间；
+- $∆timeout$：从设置超时开始到接收到下一个 leader 正确传播的区块的任意一个 shred 所需的最大延迟。作为保守估计，可以设置为：$∆timeout = 证书生成时间 + 通过 Rotor 广播区块所需时间 ≤ 3∆$
 
-节点拥有本地时钟，并会触发超时事件（timeout events）。当节点 v 的 Pool 触发 ParentReady(s, ...) 事件后，它会对以 slot s 开始的整个 leader window 中的所有区块设置超时定时器。这些超时由两个参数控制（相关于网络同步性）：
+**定义 17（超时）**当节点 $v$ 的 Pool 首次触发 `ParentReady(s, …)` 事件时，它会对从 $s$ 开始的 leader window 中的所有 $slot_i ∈ windowSlots(s)$ 设置如下超时：
 
-- ∆block：协议规定的出块时间；
-- ∆timeout：从设置超时器到接收到下一个 leader 正确传播的区块的任意一个 shred 所需的最大延迟。作为保守估计，可以设置为：
+$Timeout(i) = clock() + ∆timeout + (i − s + 1) · ∆block$
 
-```
-∆timeout ≤ 证书生成时间 + 通过 Rotor 广播区块所需时间 ≤ 3∆
-```
+​	这些超时表示： leader 正确且网络同步时，接收到某个区块的最大延迟。超时时间可以通过更精细的 ∆ 估计或对特定故障（如崩溃）的优化进一步优化。
 
-**定义 17（超时）**
+​	注意：`ParentReady(s, …)` 事件仅会在 window 的第一个 slot $s$ 被触发。因此 $i − s + 1 ≥ 1$，且 `Timeout(i)` 不能被设置为过去的时间。
 
-当节点 v 的 Pool 首次触发 ParentReady(s, …) 事件时，它会对从 s 开始的 leader window 中的所有 slot i ∈ windowSlots(s) 设置如下超时：
+**定义 18（Votor 状态）**Votor（算法 1 和 2）的状态与 slot 相关。每个 slot 的状态初始化为空集合：$state ← [∅, ∅, …]$。以下对象可以永久性地添加到 slot $s$ 的状态中：
 
-$Timeout(i) : clock() + ∆timeout + (i − s + 1) · ∆block$
+- `ParentReady(hash(b))`：Pool 触发了 `ParentReady(s, hash(b))`；
+- `Voted`：该节点在 slot $s$ 上投出了某个投票（公证或跳过）；
+- `VotedNotar(hash(b))`：该节点在 slot s 上为区块 b 投出了公证票；
+- `BlockNotarized(hash(b))`：Pool 持有 slot $s$ 上区块 $b$ 的公证证书；
+- `ItsOver`：该节点在 slot s 上投出了最终确定票，不会再投任何票；
+- `BadWindow`：该节点在 slot $s$ 上投出了以下任意一种票：skip、skip-fallback 或 notar-fallback。
 
-这些超时表示：如果 leader 正确且网络同步，那么接收到某个区块的最迟时间。
+​	此外，每个 slot 还可以关联一个待处理区块（pending block），用于后续重新尝试调用 `tryNotar()`，因为其满足条件可能会在稍后达成。该变量初始化为：$pendingBlocks ← [⊥, ⊥, …]$
 
-> 超时时间可以通过更精细的 ∆ 估计或对某些特定故障（如崩溃故障）的优化进一步提升。
+![image-20250528113428854](../assets/img/image-20250528113428854.png)
 
-注意：ParentReady(s, …) 事件仅会在一个 window 的第一个 slot s 被触发。因此 i − s + 1 ≥ 1，不会有 Timeout(i) 被设置为过去的时间。
-
-**定义 18（Votor 状态）**
-
-Votor（算法 1 和 2）访问与每个 slot 相关的状态。每个 slot 的状态初始化为空集合：
-
-$state ← [∅, ∅, …]$
-
-以下对象可以**永久性地**添加到 slot s 的状态中：
-
-- ParentReady(hash(b))：Pool 触发了 ParentReady(s, hash(b))；
-- Voted：该节点在 slot s 上投出了某个投票（公证或跳过）；
-- VotedNotar(hash(b))：该节点在 slot s 上为区块 b 投出了公证票；
-- BlockNotarized(hash(b))：Pool 持有 slot s 上区块 b 的公证证书；
-- ItsOver：该节点在 slot s 上投出了最终确定票，不会再投任何票；
-- BadWindow：该节点在 slot s 上投出了以下任意一种票：skip、skip-fallback 或 notar-fallback。
-
-此外，每个 slot 还可以关联一个**待处理区块（pending block）**，用于后续重新尝试调用 tryNotar()，因为其满足条件可能会在稍后达成。该变量初始化为：
-
-$pendingBlocks ← [⊥, ⊥, …]$
+![image-20250528113359474](../assets/img/image-20250528113359474.png)
