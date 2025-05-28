@@ -263,7 +263,7 @@ Rotor 是 Alpenglow 协议中的区块传播协议。领导者节点（发送者
 
 ### Blokstor
 
-Blokstor 会收集并存储每个 slot 中通过 Rotor 协议首次接收到的区块，如定义 10 所描述。
+​	Blokstor 会收集并存储每个 slot 中通过 Rotor 协议首次接收到的区块，如定义 10 所描述。
 
 **定义 10（Blokstor）：**Blokstor 用来管理和存储由第 2.2 节协议传播的切片（slice）的数据结构。当节点接收到一个 $shred (s, t, i, z_t, r_t, (d_i, \pi_i), \sigma_t)$ 时，节点会检查以下条件。若满足这些条件，该 shred 会被添加进 Blokstor：
 
@@ -271,6 +271,12 @@ Blokstor 会收集并存储每个 slot 中通过 Rotor 协议首次接收到的�
 - $(d_i, \pi_i)$ 是在 Merkle 根 $r_t$ 下，位置 i 对应的数据及其路径；
 - $\sigma_t$ 是由 slot $s$ 的领导者对对象 $Slice(s, t, z_t, r_t)$ 的签名。
 
-当某个 slot 的首个完整区块 $b$ 被接收，Blokstor 将触发如下事件作为算法 1 的输入：$\texttt{Block(slot(b), hash(b), hash(parent(b)))}$
+​	当某个 slot 的首个完整区块 $b$ 被接收，Blokstor 将触发如下事件作为算法 1 的输入：$\texttt{Block(slot(b), hash(b), hash(parent(b)))}$
 
 ​	除了存储首次接收到的区块，Blokstor 还可以执行修复过程（详见第 2.8 节）以收集其他区块 b 并将其存储在 Blokstor 中。如果某个区块根据定义 14 被最终确定（finalized），那么 Blokstor 只存储该 slot 中最终确定的区块。否则，在定义 16 中的事件：$\texttt{SafeToNotar(slot(b), hash(b))}$被触发之前，Blokstor 也必须先存储区块 $b$。
+
+### 投票和认证
+
+​	接下来介绍 Alpenglow 的投票数据结构和算法。简而言之，如果领导者的区块获得了至少 80% 的权益投票，那么该区块会在该轮投票后被立即最终确定（finalized），并附带一个快速最终确定证书（fast-finalization certificate）。同时，一旦某个节点观察到该区块已经获得了60% 的权益投票，它就会发出第二轮投票。当该区块在第二轮再次获得60% 的权益投票时，它同样会被最终确定。然而，如果有足够多的权益认为该区块已经延迟（late），则可以生成跳过证书（skip certificate），该区块将被跳过（skipped）。
+
+![image-20250528103246186](../assets/img/image-20250528103246186.png)
