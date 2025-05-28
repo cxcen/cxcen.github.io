@@ -1,5 +1,5 @@
 ---
-title: Solana Alpenglow共识算法白皮书
+title: Solana Alpenglow共识白皮书（翻译）
 type: post
 categories:
   - web3
@@ -20,9 +20,6 @@ tags:
         });
     </script>
 </head>
-
-# Alpenglow共识白皮书（翻译）
-
 
 
 ​	在本文中，我们描述并分析了 Alpenglow —— 一个专为全球高性能权益证明（Proof-of-Stake, PoS）区块链量身打造的共识协议。
@@ -280,3 +277,48 @@ Rotor 是 Alpenglow 协议中的区块传播协议。领导者节点（发送者
 ​	接下来介绍 Alpenglow 的投票数据结构和算法。简而言之，如果领导者的区块获得了至少 80% 的权益投票，那么该区块会在该轮投票后被立即最终确定（finalized），并附带一个快速最终确定证书（fast-finalization certificate）。同时，一旦某个节点观察到该区块已经获得了60% 的权益投票，它就会发出第二轮投票。当该区块在第二轮再次获得60% 的权益投票时，它同样会被最终确定。然而，如果有足够多的权益认为该区块已经延迟（late），则可以生成跳过证书（skip certificate），该区块将被跳过（skipped）。
 
 ![image-20250528103246186](../assets/img/image-20250528103246186.png)
+
+### 池（Pool）
+
+​	每个节点维护一个名为 Pool 的数据结构。在这个 Pool 中，每个节点会记录每个 slot 上的所有投票和证书。
+
+**定义 12（存储投票）**Pool 以如下方式存储 slot 和节点的投票：
+
+- 第一次收到的公证（notarization）或跳过（skip）投票；
+- 最多三条收到的 公证回退投票（notar-fallback votes）；
+- 第一次收到的 跳过回退投票（skip-fallback vote）；
+- 第一次收到的 最终确定投票（finalization vote）。
+
+**定义 13（证书）**Pool 会生成、存储并广播以下证书：
+
+- 当收到足够数量的投票（见表 5）时，就会生成相应的证书；
+- 当接收到的或本地构造的证书第一次被加入到 Pool 时，会立即广播该证书给其他节点；
+- 对于某个区块/slot，Pool 中只存储每种类型的一个证书。
+
+> 注意：由表 5 可知，如果正确节点生成了 快速最终确定证书（Fast-Finalization Certificate），那么它也必然生成了 公证证书（Notarization Certificate），而这又意味着它也生成了 公证回退证书（Notar-Fallback Certificate）。
+
+**定义 14（最终确定）**我们有两种方式可以将区块最终确定：
+
+- 如果某个 slot 上的最终确定证书存在于 Pool 中，那么该 slot 上唯一被公证的区块将被最终确定（称为“慢最终确定”）；
+- 如果某个区块 b 的<u>快速</u>最终确定证书存在于 Pool 中，那么区块 b 将被最终确定（称为“快最终确定”）。
+
+​	无论是慢还是快，一旦某个区块被最终确定，其所有祖先区块也会被优先最终确定。
+
+**定义 15（Pool 事件）**以下事件作为 算法 1 的输入被触发：
+
+- `BlockNotarized(slot(b), hash(b))`：Pool 中存在区块 $b$ 的公证证书；
+- `ParentReady(s, hash(b))`：slot $s$ 是其 leader window 中的第一个 slot，且 Pool 中已存在区块 $b$ 的公证证书或公证回退证书，并且对于 $slot(b) < s' < s$ 的每个 $s'$，Pool 中也存在跳过证书。
+
+**定义 16（回退事件）**考虑 slot $s = slot(b)$ 上的区块 b，用 `notar(b)` 表示 Pool 中为区块 b 投下公证票的所有节点所占的累积权益，用 `skip(s)` 表示 Pool 中为 slot $s$ 投下跳过票的所有节点所占的累积权益。根据定义 12，一个节点在每个 slot 上只能计入一次投票权重。以下事件作为 算法 1 的输入被触发：
+
+- $SafeToNotar(s, hash(b))$：仅节点已经在 slot $s$ 投过票，但 $b$ 还没有被公证。满足：
+
+  $notar(b) ≥ 40%$ or $skip(s) + notar(b) ≥ 60%$ and $notar(b) ≥ 20%$
+
+​	如果 $s$ 是 leader window 中的第一个 slot，则直接触发事件。否则，节点需先通过修复流程（第 2.8 节）获取区块 $b$，以便识别其父区块。随后，当 Pool 中包含其父区块的公证回退证书后，再触发此事件。
+
+- $SafeToSkip(s)$：仅当以下条件成立时才触发，节点已经在 slot $s$ 投过票，但不是投的跳过票，且满足：
+
+​	$skip(s) + ∑ notar(b) - max(notar(b)) ≥ 40%$
+
+​	$SafeToNotar(s, b)$ 事件表明：不可能存在另一个区块 $b' ≠ b$ 能够在 slot $s$ 上被快速最终确定，因此现在投 $b$ 的公证回退票是安全的。同样地，$SafeToSkip(s)$ 表明：不可能存在任何区块能在 slot $s$ 上被快速最终确定，因此现在投 slot $s$ 的跳过回退票是安全的。
