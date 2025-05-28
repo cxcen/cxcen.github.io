@@ -10,46 +10,9 @@ tags:
   - consensus
 ---
 <head>
-    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
-    <script type="text/x-mathjax-config">
-        MathJax.Hub.Config({
-        'HTML-CSS': {
-            matchFontHeight: true,
-            showMathMenu: true
-        },
-        SVG: {
-            matchFontHeight: true
-        },
-        CommonHTML: {
-            matchFontHeight: true
-        },
-        preRemoveClass: "MathJax_Preview",
-        tex2jax: {
-            inlineMath: [
-                ['$','$']
-            ],
-            displayMath: [ 
-                ['$$','$$'],
-                ['\\[','\\]'] 
-            ],
-            processEscapes: true,
-            processRefs: true,
-            processEnvironments: true,
-            preview: "TeX",
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code']
-        },
-        TeX: { 
-            extensions: ["AMSmath.js", "AMSsymbols.js"],
-            equationNumbers: { 
-                autoNumber: "AMS",
-                useLabelIds: true
-            },
-            Macros: {},
-            MAXMACROS: 10000,
-            MAXBUFFER: 5*1024
-        },
-    });
-    </script>
+   <script type="text/javascript" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
 </head>
 
 
